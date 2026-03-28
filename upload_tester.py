@@ -109,7 +109,7 @@ class UploadTester:
             username = self.args.username or "admin"
             password = self.args.password or "password"
             
-            if self.session.login_dvwa(self.args.base_url, username, password):
+            if self.session.login(self.args.base_url, username, password):
                 print(f"{self.c_success}[✓] Authentication successful{Style.RESET_ALL}")
                 
                 # Set security level if specified
