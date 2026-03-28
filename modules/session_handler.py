@@ -43,6 +43,12 @@ class SessionHandler:
         verify_ssl: bool = False,
         timeout: int = 15,
         proxies: Optional[Dict[str, str]] = None,
+
+    def get_session(self):
+        return self.session
+
+    def close(self):
+        self.session.close()   
     ):
         self.target_url = target_url.rstrip("/")
         self.username = username
