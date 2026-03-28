@@ -46,7 +46,17 @@ class UploadTester:
     
     def __init__(self, args):
         self.args = args
-        self.session = SessionHandler(target_url=self.args.target_url)  
+        
+        # Let the session handler know if we are targeting DVWA specifically
+        app = "dvwa" if getattr(args, 'dvwa_login', False) else "auto"
+        
+        # Initialize the session with the base URL and credentials right away
+        self.session = SessionHandler(
+            target_url=self.args.base_url,
+            username=self.args.username,
+            password=self.args.password,
+            app_type=app
+        )  
         self.waf_detector = WAFDetector()
         self.reporter = Reporter()
         self.vulnerabilities_found = []
@@ -59,7 +69,7 @@ class UploadTester:
         self.c_warning = Fore.YELLOW + Style.BRIGHT
         self.c_info = Fore.CYAN
         self.c_header = Fore.MAGENTA + Style.BRIGHT
-        
+
     def print_banner(self):
         """Display tool banner"""
         banner = f"""
@@ -106,15 +116,14 @@ class UploadTester:
         if self.args.dvwa_login:
             print(f"\n{self.c_info}[*] Authenticating to DVWA...{Style.RESET_ALL}")
             
-            username = self.args.username or "admin"
-            password = self.args.password or "password"
-            
-            if self.session.login(self.args.base_url, username, password):
+            # Look ma, no arguments! It already knows them from __init__
+            if self.session.login():
                 print(f"{self.c_success}[✓] Authentication successful{Style.RESET_ALL}")
                 
                 # Set security level if specified
                 if self.args.security_level:
-                    if self.session.set_dvwa_security(self.args.base_url, self.args.security_level):
+                    # set_dvwa_security only needs the level now
+                    if self.session.set_dvwa_security(level=self.args.security_level):
                         print(f"{self.c_success}[✓] Security level set to: {self.args.security_level}{Style.RESET_ALL}")
             else:
                 print(f"{self.c_error}[✗] Authentication failed{Style.RESET_ALL}")
@@ -123,13 +132,17 @@ class UploadTester:
         
         elif self.args.custom_login:
             print(f"\n{self.c_info}[*] Custom authentication...{Style.RESET_ALL}")
-            # Parse credentials from command line
-            creds = {}
-            for cred in self.args.credentials.split(','):
-                key, val = cred.split('=')
-                creds[key.strip()] = val.strip()
             
-            if self.session.login_custom(self.args.custom_login, creds, self.args.success_indicator):
+            # Map custom credentials over to the session handler
+            if self.args.credentials:
+                creds = [c.split('=')[1].strip() for c in self.args.credentials.split(',')]
+                if len(creds) >= 2:
+                    self.session.username = creds[0]
+                    self.session.password = creds[1]
+            
+            self.session.target_url = self.args.custom_login
+            
+            if self.session.login():
                 print(f"{self.c_success}[✓] Authentication successful{Style.RESET_ALL}")
             else:
                 print(f"{self.c_error}[✗] Authentication failed{Style.RESET_ALL}")
