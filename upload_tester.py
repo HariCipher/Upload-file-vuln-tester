@@ -135,22 +135,36 @@ class UploadTester:
     def upload_file(self, file_path: str, filename: str, mime_type: str = None) -> bool:
         """
         Upload a file to target URL
-        
-        Returns:
-            True if upload appeared successful
         """
         try:
             with open(file_path, 'rb') as f:
                 files = {self.args.field_name: (filename, f, mime_type or 'application/octet-stream')}
                 
+                # ---> ADD THIS LINE: Simulates clicking the "Upload" button <---
+                form_data = {'Upload': 'Upload'} 
+                
                 response = self.session.get_session().post(
                     self.args.target_url,
                     files=files,
+                    data=form_data,    # ---> ADD THIS LINE to the post request <---
                     timeout=10
                 )
                 
                 self.tests_run += 1
                 
+                # --- ADDING SUPER DEBUGGING FOR -v FLAG ---
+                if self.args.verbose:
+                    print(f"\n{self.c_warning}[DEBUG] Target: {self.args.target_url}{Style.RESET_ALL}")
+                    print(f"{self.c_warning}[DEBUG] Payload: {filename}{Style.RESET_ALL}")
+                    print(f"{self.c_warning}[DEBUG] Status Code: {response.status_code}{Style.RESET_ALL}")
+                    
+                    if "not uploaded" in response.text.lower() or "failed" in response.text.lower():
+                        import re
+                        match = re.search(r'<pre>(.*?)</pre>', response.text, re.DOTALL)
+                        if match:
+                            print(f"{self.c_error}[DEBUG] DVWA Message: {match.group(1).strip()}{Style.RESET_ALL}")
+                # ------------------------------------------
+
                 # Check for success indicators
                 if response.status_code == 200:
                     # Look for common success messages
