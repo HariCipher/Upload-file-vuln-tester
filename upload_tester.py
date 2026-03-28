@@ -46,7 +46,7 @@ class UploadTester:
     
     def __init__(self, args):
         self.args = args
-        self.session = SessionHandler()
+        self.session = SessionHandler(target_url=self.args.target_url)  
         self.waf_detector = WAFDetector()
         self.reporter = Reporter()
         self.vulnerabilities_found = []
