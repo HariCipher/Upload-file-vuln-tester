@@ -19,7 +19,7 @@ class SessionHandler:
         Login to DVWA and maintain session
         
         Args:
-            base_url: DVWA base URL (e.g., http://localhost/DVWA)
+            base_url: DVWA base URL (e.g., http://localhost/DVWA or http://localhost/dvwa)
             username: DVWA username
             password: DVWA password
             
@@ -27,37 +27,85 @@ class SessionHandler:
             True if login successful
         """
         try:
+            # Normalize base URL - remove trailing slash
+            base_url = base_url.rstrip('/')
+            
             # Get login page to obtain CSRF token
-            login_url = urljoin(base_url, "login.php")
-            response = self.session.get(login_url)
+            login_url = urljoin(base_url + '/', "login.php")
+            
+            # Test if URL is accessible
+            try:
+                response = self.session.get(login_url, timeout=10)
+            except requests.exceptions.RequestException as e:
+                print(f"[!] Cannot reach DVWA at {login_url}")
+                print(f"[!] Error: {e}")
+                return False
+            
+            # Check if we got a valid response
+            if response.status_code != 200:
+                print(f"[!] DVWA login page returned status {response.status_code}")
+                return False
             
             # Extract user_token from response
-            if 'user_token' in response.text:
-                import re
-                token_match = re.search(r"name='user_token' value='([^']+)'", response.text)
-                user_token = token_match.group(1) if token_match else ''
-            else:
-                user_token = ''
+            import re
+            user_token = ''
+            
+            # Try multiple token patterns (DVWA versions vary)
+            token_patterns = [
+                r"name=['\"]user_token['\"] value=['\"]([^'\"]+)['\"]",
+                r"name='user_token' value='([^']+)'",
+                r'name="user_token" value="([^"]+)"',
+            ]
+            
+            for pattern in token_patterns:
+                token_match = re.search(pattern, response.text)
+                if token_match:
+                    user_token = token_match.group(1)
+                    break
             
             # Perform login
             login_data = {
                 'username': username,
                 'password': password,
-                'Login': 'Login',
-                'user_token': user_token
+                'Login': 'Login'
             }
             
-            response = self.session.post(login_url, data=login_data)
+            # Only add user_token if found
+            if user_token:
+                login_data['user_token'] = user_token
             
-            # Check if login successful
-            if 'logout' in response.text.lower() or response.url.endswith('index.php'):
+            # Post login credentials
+            response = self.session.post(login_url, data=login_data, allow_redirects=True)
+            
+            # Check multiple success indicators
+            success_indicators = [
+                'logout.php' in response.text.lower(),
+                'logout' in response.text.lower() and 'login' not in response.url.lower(),
+                response.url.endswith('index.php'),
+                'welcome to damn vulnerable web application' in response.text.lower(),
+            ]
+            
+            if any(success_indicators):
                 self.authenticated = True
                 return True
+            
+            # Debug output if login failed
+            print(f"[!] Login may have failed - check credentials")
+            print(f"[!] Final URL: {response.url}")
+            print(f"[!] Status code: {response.status_code}")
+            
+            # Check for common error messages
+            if 'username and/or password incorrect' in response.text.lower():
+                print(f"[!] DVWA reported: Invalid username or password")
+            elif 'login' in response.text.lower() and 'username' in response.text.lower():
+                print(f"[!] Still on login page - authentication failed")
             
             return False
             
         except Exception as e:
-            print(f"[!] Login failed: {e}")
+            print(f"[!] Login exception: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def set_dvwa_security(self, base_url: str, level: str = "low") -> bool:
