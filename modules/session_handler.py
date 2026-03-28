@@ -42,13 +42,29 @@ class SessionHandler:
         custom_headers: Optional[Dict[str, str]] = None,
         verify_ssl: bool = False,
         timeout: int = 15,
-        proxies: Optional[Dict[str, str]] = None,
+        proxies: Optional[Dict[str, str]] = None
+    ):  # <--- Added the closing ): here
+        self.target_url = target_url.rstrip("/")
+        self.username = username
+        self.password = password
+        self.app_type = app_type.lower()
+        self.timeout = timeout
+        self.verify_ssl = verify_ssl
+        self.proxies = proxies or {}
+
+        self.session = requests.Session()
+        self.session.verify = verify_ssl
+        if custom_headers:
+            self.session.headers.update(custom_headers)
+
+        self.authenticated = False
+        self.auth_token: Optional[str] = None
 
     def get_session(self):
         return self.session
 
     def close(self):
-        self.session.close()   
+        self.session.close()  
     ):
         self.target_url = target_url.rstrip("/")
         self.username = username
