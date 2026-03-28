@@ -77,17 +77,21 @@ class UploadTester:
             return
         
         print(f"\n{self.c_info}[*] Detecting WAF...{Style.RESET_ALL}")
-        waf_result = self.waf_detector.detect(self.args.base_url, self.session.get_session())
         
-        if waf_result['waf_detected']:
-            print(f"{self.c_warning}[!] WAF Detected: {waf_result['waf_name']} "
-                  f"(Confidence: {waf_result['confidence']}){Style.RESET_ALL}")
-            print(f"{self.c_info}[*] Indicators: {', '.join(waf_result['indicators'])}{Style.RESET_ALL}")
+        # FIX 1: Only pass the URL. The session is already passed when WAFDetector is initialized.
+        waf_result = self.waf_detector.detect(self.args.base_url)
+        
+        # FIX 2: Access properties using dot notation (waf_result.detected) instead of dict notation.
+        if waf_result.detected:
+            print(f"{self.c_warning}[!] WAF Detected: {waf_result.name} "
+                  f"(Confidence: {waf_result.confidence}){Style.RESET_ALL}")
+            print(f"{self.c_info}[*] Indicators: {', '.join(waf_result.indicators)}{Style.RESET_ALL}")
             
             if not self.args.ignore_waf:
-                print(f"\n{self.c_warning}[!] WAF may block testing. Recommendations:{Style.RESET_ALL}")
-                for rec in self.waf_detector.get_bypass_recommendations():
-                    print(f"    • {rec}")
+                print(f"\n{self.c_warning}[!] WAF may block testing. Recommendation:{Style.RESET_ALL}")
+                
+                # FIX 3: WAFResult has a single 'recommendation' string, not a list method.
+                print(f"    • {waf_result.recommendation}")
                 
                 if not self.args.force:
                     response = input(f"\n{self.c_warning}Continue anyway? (y/N): {Style.RESET_ALL}")
