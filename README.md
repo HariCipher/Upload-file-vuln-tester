@@ -393,7 +393,7 @@ git push origin feature/new-bypass-technique
 
 - 🎓 B.Tech Computer Science Engineering Student
 - 🔐 Cybersecurity Enthusiast | SOC Analyst Track
-- 🌐 GitHub: [@HariCipher](https://github.com/HariCipher) / [@sideEffect7](https://github.com/sideEffect7)
+- 🌐 GitHub: [@HariCipher](https://github.com/HariCipher)
 - 💼 LinkedIn: [Harilal P](https://www.linkedin.com/in/thisisharilal/)
 - 📧 Email: thisisharilal@gmail.com
 
