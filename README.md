@@ -119,7 +119,22 @@ python upload_tester.py http://target.com/upload.php \
   --report \
   --verbose
 ```
+## 📸 Screenshots
 
+### Tool Banner
+![Banner](assets/banner.png)
+
+### Scan Initialization
+![Init](assets/init.png)
+
+### Vulnerability Detection
+![Results](assets/results.png)
+
+### Full Scan Output
+![Scan](assets/scan.png)
+
+### Professional Reports
+![Reports](assets/web-reports.png)
 ---
 
 ## 📚 Usage Examples
