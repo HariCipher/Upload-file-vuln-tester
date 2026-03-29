@@ -145,8 +145,8 @@ This adds:
 
 **Low Security Level:**
 ```bash
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --username admin \
   --password password \
@@ -160,8 +160,8 @@ python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
 
 **Medium Security Level:**
 ```bash
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --security-level medium \
   --threads 3 \
@@ -316,7 +316,7 @@ python upload_tester.py http://target.com/upload.php --base http://target.com --
 # Use --verbose to see authentication attempt details
 
 # For DVWA, ensure database is set up
-# Access http://localhost/DVWA/setup.php first
+# Access http://localhost/setup.php first
 ```
 
 #### Issue: "Connection timeout" or "SSL errors"

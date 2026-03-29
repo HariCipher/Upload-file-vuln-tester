@@ -422,8 +422,8 @@ Examples:
   python upload_tester.py http://target.com/upload.php --base http://target.com
 
   # DVWA scan with authentication
-  python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \\
-    --base http://localhost/DVWA/ --dvwa-login --security-level low
+  python upload_tester.py http://localhost/vulnerabilities/upload/ \\
+    --base http://localhost/ --dvwa-login --security-level low
 
   # Advanced scan with all features
   python upload_tester.py http://target.com/upload.php --base http://target.com \\

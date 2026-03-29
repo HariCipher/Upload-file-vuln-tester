@@ -19,7 +19,7 @@ class SessionHandler:
         Login to DVWA and maintain session
         
         Args:
-            base_url: DVWA base URL (e.g., http://localhost/DVWA or http://localhost/dvwa)
+            base_url: DVWA base URL (e.g., http://localhost/dvwa/ or http://localhost/)
             username: DVWA username
             password: DVWA password
             

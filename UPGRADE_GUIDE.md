@@ -124,8 +124,8 @@ pip install -r requirements.txt
 docker start kali-dvwa-1
 
 # Run the upgraded tool
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --security-level low \
   --verify-rce \
@@ -157,7 +157,7 @@ python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
 [*] Running vulnerability tests...
 [✓] VULNERABLE: Double Extension
     Filename: shell.php.jpg
-    Location: http://localhost/DVWA/hackable/uploads/shell.php.jpg
+    Location: http://localhost/hackable/uploads/shell.php.jpg
     RCE Output: www-data
 
 ...
@@ -304,12 +304,12 @@ python upload_tester.py <URL> --base <BASE> --report
 
 ```bash
 # Low security
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ --dvwa-login --security-level low --report
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ --dvwa-login --security-level low --report
 
 # Medium security
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ --dvwa-login --security-level medium --report
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ --dvwa-login --security-level medium --report
 ```
 
 ### Advanced Options
@@ -384,7 +384,7 @@ chmod +x upload_tester.py
 **Issue:** DVWA login fails
 ```bash
 # Verify DVWA is accessible
-curl http://localhost/DVWA/login.php
+curl http://localhost/login.php
 
 # Check credentials in code
 --username admin --password password

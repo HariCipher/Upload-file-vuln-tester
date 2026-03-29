@@ -139,8 +139,8 @@ docker ps | grep dvwa
 docker start kali-dvwa-1
 
 # Run first scan
-python upload_tester.py http://localhost/DVWA/vulnerabilities/upload/ \
-  --base http://localhost/DVWA/ \
+python upload_tester.py http://localhost/vulnerabilities/upload/ \
+  --base http://localhost/ \
   --dvwa-login \
   --security-level low \
   --verify-rce \
@@ -319,13 +319,13 @@ pip install colorama
 **Solution:**
 ```bash
 # Check DVWA is accessible
-curl -I http://localhost/DVWA/
+curl -I http://localhost/
 
 # Verify credentials
 # Default: admin / password
 
 # If needed, reset DVWA database
-# Visit: http://localhost/DVWA/setup.php
+# Visit: http://localhost/setup.php
 ```
 
 ### Issue: No payloads generated
