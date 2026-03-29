@@ -294,7 +294,7 @@ Beautiful, professional HTML reports with:
 
 **Screenshot Preview:**
 
-![Report Sample](assets/report-sample.png) *(Add screenshot after testing)*
+![Report Sample](assets/web-report.png) 
 
 ---
 
